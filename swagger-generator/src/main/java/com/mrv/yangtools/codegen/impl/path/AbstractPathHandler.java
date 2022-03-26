@@ -33,8 +33,8 @@ public abstract class AbstractPathHandler implements PathHandler {
         this.swagger = target;
         this.ctx = ctx;
         this.module = modules;
-        data = "/data/";
-        operations = "/operations/";
+        data = "/restconf/data/";
+        operations = "/restconf/operations/";
         this.dataObjectBuilder = objBuilder;
         this.tagGenerators = generators;
         this.fullCrud = fullCrud;

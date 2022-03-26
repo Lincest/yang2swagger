@@ -116,7 +116,7 @@ public class SwaggerGeneratorWithOdlPathHandlerTest extends AbstractItTest {
 
         //then
         Map<String, Path> paths = swagger.getPaths().entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith("/operations"))
+                .filter(entry -> entry.getKey().startsWith("/restconf/operations"))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         assertEquals(4, paths.keySet().size());

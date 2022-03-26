@@ -57,7 +57,7 @@ public class Main {
     public boolean simplified = false;
 
     @Option(name = "-use-namespaces", usage="Use namespaces in resource URI")
-    public boolean useNamespaces = false;
+    public boolean useNamespaces = true;
 
     @Option(name = "-fullCrud", usage="If the flag is set to false path are generated for GET operations only. Default true")
     public boolean fullCrud = true;
@@ -135,6 +135,7 @@ public class Main {
                 .host(basePath)
                 .pathHandler(pathHandler)
                 .elements(map(elementType));
+
 
         generator
                 .appendPostProcessor(new CollapseTypes());
