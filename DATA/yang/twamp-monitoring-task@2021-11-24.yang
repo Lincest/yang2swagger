@@ -1,0 +1,243 @@
+module twamp-monitoring-task {
+     yang-version 1.1;
+     namespace urn:ietf:params:xml:ns:yang:twamp;
+     prefix twamp-monitoring-task;
+
+     import ietf-yang-types {
+       prefix "yang";
+     }
+
+     organization   "";
+     contact   "";
+     description
+       "This YANG module specifies a vendor-independent data
+              model for the Two-Way Active Measurement Protocol (TWAMP).
+						";
+
+     revision 2021-11-24 {
+       description
+         "Initial Revision.";
+
+       reference
+         "TWAMP YANG Data Model.";
+     }
+			     
+			identity message-type {
+			    description
+			      "Defines a type for message.";
+			  }
+
+			identity dscp {
+			    base message-type;
+			    description
+			      "Identity for dscp.";
+			  }     
+     
+     
+     container twamp-monitoring-tasks{
+     
+     		description "define twamp monitoring task";
+     
+     		list twamp-monitoring-task {
+     			key  "id";
+     			
+     			leaf id {
+             type string;
+             description   ".";
+           }
+     				
+      	//	leaf period-enable {
+        //  		type boolean;
+        //      default "false";
+        //     description   ".";
+       //    }    				
+     				
+     		//	leaf granularity {
+      //       type uint32;
+        //     units "minutes";
+       //      range "10..60";
+        //     default "30";
+        //     description   ".";
+       //    }     				
+     				     		
+     		    container  twamp-testcase{
+     		      leaf l3vpn-id {
+            		  type string;
+             			description   ".";
+           		}
+           		
+     		      leaf src-l3tp-id {
+            		  type string;
+             			description   ".";
+           		}     		    
+     		    
+       		    leaf des-l3tp-id {
+            		  type string;
+             			description   ".";
+           		}   		    
+     		    
+     		      leaf src-udp-port {
+            		  type uint32;
+             			description   ".";
+           		}     		  
+
+     		      leaf des-udp-port {
+            		  type uint32;
+             			description   ".";
+           		}  
+
+
+     		      leaf message-type {
+            	  type identityref {
+                  base message-type;
+                }
+             			description   ".";
+           		}  
+
+
+     		      leaf message-value {
+            		  type uint32;
+             			description   ".";
+           		} 
+
+     		      leaf duration {
+            		  type uint32;
+             			description   ".";
+           		} 
+
+
+     		      leaf packet-rate {
+            		  type uint32;
+             			description   ".";
+           		} 
+
+     		      leaf packet-length {
+            		  type uint32;
+             			description   ".";
+           		} 
+
+
+     		      leaf sample-rate {
+            		  type uint32;
+             			description   ".";
+           		} 
+
+
+     		      leaf sample-timeout {
+            		  type uint32;
+             			description   ".";
+           		} 
+
+     		    }//end of twamp-testcase, container
+     		
+     			container	twamp-result{
+     	
+     		      leaf test-length {
+            		  type uint32;
+             			description   ".";
+           		}      	
+     	
+  					   leaf test-type {
+                type enumeration {
+                  enum total {
+          	        description   ".";
+                              }
+                  enum last {
+                    description   ".";
+                   }
+                  }//end type 
+                    description   ".";
+             }     	
+     	
+				         leaf start-time {
+				           type yang:date-and-time;
+				           description
+				             "The time stamp when the parameter is started.";
+				         }
+				         leaf stop-time {
+				           type yang:date-and-time;
+				           description
+				             "The time stamp when the parameter is stoped.";
+				         }     	
+
+  					   leaf test-state {
+	                type enumeration {
+	                  enum not-start {
+	          	        description   ".";
+	                              }
+	                  enum testing {
+	                    description   ".";
+	                   }
+	                  enum completed {
+	                    description   ".";
+	                   }                   
+	                  enum overtime {
+	                    description   ".";
+	                   }                   
+	                  enum not-existent {
+	                    description   ".";
+	                   }
+	                  
+	                  }//end type 
+	                    description   ".";
+             }      	
+   
+     	
+     		      leaf send-packet {
+            		  type uint32;
+             			description   ".";
+           		}    	
+     	
+     		      leaf receive--packet {
+            		  type uint32;
+             			description   ".";
+           		}     	
+
+							leaf loss-rate {
+		             type decimal64 {
+		               fraction-digits 6;
+		               range "0..100";
+		             }
+		             units "percent";
+		             description "";
+		           }
+
+     		      leaf avg-delay {
+            		  type uint32;
+                  units "microseconds";
+             			description   ".";
+           		} 
+
+     		      leaf min-delay {
+            		  type uint32;
+                  units "microseconds";
+             			description   ".";
+           		} 
+
+     		      leaf max-delay {
+            		  type uint32;
+                  units "microseconds";
+             			description   ".";
+           		} 
+
+     		      leaf avg-delay-jitter {
+            		  type uint32;
+                  units "microseconds";
+             			description   ".";
+           		} 
+           		
+     		      leaf min-delay-jitter {
+            		  type uint32;
+                  units "microseconds";
+             			description   ".";
+           		}            		
+           		
+     		      leaf max-delay-jitter {
+            		  type uint32;
+                  units "microseconds";
+             			description   ".";
+           		}            		
+     	}//end of twamp-result, container   		
+   }// END of list     
+ } //end of twamp-monitoring-tasks  ,  container
+}// end of module

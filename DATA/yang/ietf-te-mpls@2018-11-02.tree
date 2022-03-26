@@ -1,0 +1,187 @@
+
+module: ietf-te-mpls
+  augment /te:te/te:tunnels/te:tunnel:
+    +--rw tunnel-igp-shortcut
+    |  +--rw shortcut-eligible?   boolean
+    |  +--rw metric-type?         identityref
+    |  +--rw metric?              int32
+    |  +--rw routing-afs*         inet:ip-version
+    +--rw forwarding
+    |  +--rw binding-label?   rt-types:mpls-label
+    |  +--rw load-share?      uint32
+    |  +--rw policy-class?    uint8
+    +--rw bandwidth-mpls
+    |  +--rw specification-type?   te-mpls-types:te-bandwidth-type
+    |  +--rw set-bandwidth?        te-mpls-types:bandwidth-kbps
+    |  +--rw class-type?           te-types:te-ds-class
+    |  +--rw qos-if-cars
+    |  |  +--rw qos-if-car* [direction]
+    |  |     +--rw direction    enumeration
+    |  |     +--rw CIR?         int32
+    |  |     +--rw PIR?         int32
+    |  |     +--rw CBS?         int32
+    |  |     +--rw PBS?         int32
+    |  +--ro state
+    |  |  +--ro signaled-bandwidth?   te-mpls-types:bandwidth-kbps
+    |  +--rw auto-bandwidth
+    |     +--rw enabled?            boolean
+    |     +--rw min-bw?             te-mpls-types:bandwidth-kbps
+    |     +--rw max-bw?             te-mpls-types:bandwidth-kbps
+    |     +--rw adjust-interval?    uint32
+    |     +--rw adjust-threshold?   rt-types:percentage
+    |     +--rw overflow
+    |     |  +--rw enabled?               boolean
+    |     |  +--rw overflow-threshold?    rt-types:percentage
+    |     |  +--rw trigger-event-count?   uint16
+    |     +--rw underflow
+    |        +--rw enabled?               boolean
+    |        +--rw underflow-threshold?   rt-types:percentage
+    |        +--rw trigger-event-count?   uint16
+    +--rw path-setup-protocol?              identityref
+    +--rw bfd-profile-ID?                   string
+    +--rw bfd-detect-type?                  enumeration
+    +--ro path-type?                        identityref
+    +--ro ip-encapsulation?                 boolean
+    +--ro local-discriminator?              discriminator
+    +--ro remote-discriminator?             discriminator
+    +--ro remote-multiplier?                multiplier
+    +--ro demand-capability?                boolean {demand-mode}?
+    +--ro source-port?                      inet:port-number
+    +--ro dest-port?                        inet:port-number
+    +--ro session-running
+    |  +--ro session-index?                uint32
+    |  +--ro local-state?                  state
+    |  +--ro remote-state?                 state
+    |  +--ro local-diagnostic?             iana-bfd-types:diagnostic
+    |  +--ro remote-diagnostic?            iana-bfd-types:diagnostic
+    |  +--ro remote-authenticated?         boolean
+    |  +--ro remote-authentication-type?   iana-bfd-types:auth-type {authentication}?
+    |  +--ro detection-mode?               enumeration
+    |  +--ro negotiated-tx-interval?       uint32
+    |  +--ro negotiated-rx-interval?       uint32
+    |  +--ro detection-time?               uint32
+    |  +--ro echo-tx-interval-in-use?      uint32 {echo-mode}?
+    +--ro session-statistics
+    |  +--ro create-time?                    yang:date-and-time
+    |  +--ro last-down-time?                 yang:date-and-time
+    |  +--ro last-up-time?                   yang:date-and-time
+    |  +--ro down-count?                     yang:counter32
+    |  +--ro admin-down-count?               yang:counter32
+    |  +--ro receive-packet-count?           yang:counter64
+    |  +--ro send-packet-count?              yang:counter64
+    |  +--ro receive-invalid-packet-count?   yang:counter64
+    |  +--ro send-failed-packet-count?       yang:counter64
+    +--rw local-multiplier?                 multiplier
+    +--rw (interval-config-type)?
+    |  +--:(tx-rx-intervals)
+    |  |  +--rw desired-min-tx-interval?    uint32
+    |  |  +--rw required-min-rx-interval?   uint32
+    |  +--:(single-interval) {single-minimum-interval}?
+    |     +--rw min-interval?               uint32
+    +--rw meg-id?                           string
+    +--rw meg-level?                        uint32
+    +--rw mep-id?                           uint32
+    +--rw remote-mep-id?                    uint32
+    +--rw cc-interval?                      identityref
+    +--rw lm-interval?                      identityref
+    +--rw dm-interval?                      identityref
+  augment /te:te/te:tunnels/te:tunnel/te:p2p-primary-paths/te:p2p-primary-path:
+    +--rw static-lsp-name?   mpls-static:static-lsp-ref
+  augment /te:te/te:tunnels/te:tunnel/te:p2p-primary-paths/te:p2p-primary-path/te:state:
+    +--ro static-lsp-name?   mpls-static:static-lsp-ref
+  augment /te:te/te:tunnels/te:tunnel/te:p2p-secondary-paths/te:p2p-secondary-path:
+    +--rw static-lsp-name?   mpls-static:static-lsp-ref
+  augment /te:te/te:tunnels/te:tunnel/te:p2p-secondary-paths/te:p2p-secondary-path/te:state:
+    +--ro static-lsp-name?   mpls-static:static-lsp-ref
+  augment /te:te/te:globals/te:named-path-constraints/te:named-path-constraint:
+    +--rw bandwidth
+       +--rw specification-type?   te-mpls-types:te-bandwidth-type
+       +--rw set-bandwidth?        te-mpls-types:bandwidth-kbps
+       +--rw class-type?           te-types:te-ds-class
+       +--rw qos-if-cars
+       |  +--rw qos-if-car* [direction]
+       |     +--rw direction    enumeration
+       |     +--rw CIR?         int32
+       |     +--rw PIR?         int32
+       |     +--rw CBS?         int32
+       |     +--rw PBS?         int32
+       +--ro state
+          +--ro signaled-bandwidth?   te-mpls-types:bandwidth-kbps
+  augment /te:te/te:tunnels/te:tunnel/te:p2p-primary-paths/te:p2p-primary-path/te:state/te:lsps/te:lsp:
+    +--ro performance-metric
+       +--ro measurement
+       |  +--ro unidirectional-delay?                 uint32
+       |  +--ro unidirectional-min-delay?             uint32
+       |  +--ro unidirectional-max-delay?             uint32
+       |  +--ro unidirectional-delay-variation?       uint32
+       |  +--ro unidirectional-packet-loss?           decimal64
+       |  +--ro unidirectional-residual-bandwidth?    rt-types:bandwidth-ieee-float32
+       |  +--ro unidirectional-available-bandwidth?   rt-types:bandwidth-ieee-float32
+       |  +--ro unidirectional-utilized-bandwidth?    rt-types:bandwidth-ieee-float32
+       +--ro normality
+       |  +--ro unidirectional-delay?                 te-types:performance-metric-normality
+       |  +--ro unidirectional-min-delay?             te-types:performance-metric-normality
+       |  +--ro unidirectional-max-delay?             te-types:performance-metric-normality
+       |  +--ro unidirectional-delay-variation?       te-types:performance-metric-normality
+       |  +--ro unidirectional-packet-loss?           te-types:performance-metric-normality
+       |  +--ro unidirectional-residual-bandwidth?    te-types:performance-metric-normality
+       |  +--ro unidirectional-available-bandwidth?   te-types:performance-metric-normality
+       |  +--ro unidirectional-utilized-bandwidth?    te-types:performance-metric-normality
+       +--ro throttle
+          +--ro unidirectional-delay-offset?           uint32
+          +--ro measure-interval?                      uint32
+          +--ro advertisement-interval?                uint32
+          +--ro suppression-interval?                  uint32
+          +--ro threshold-out
+          |  +--ro unidirectional-delay?                 uint32
+          |  +--ro unidirectional-min-delay?             uint32
+          |  +--ro unidirectional-max-delay?             uint32
+          |  +--ro unidirectional-delay-variation?       uint32
+          |  +--ro unidirectional-packet-loss?           decimal64
+          |  +--ro unidirectional-residual-bandwidth?    rt-types:bandwidth-ieee-float32
+          |  +--ro unidirectional-available-bandwidth?   rt-types:bandwidth-ieee-float32
+          |  +--ro unidirectional-utilized-bandwidth?    rt-types:bandwidth-ieee-float32
+          +--ro threshold-in
+          |  +--ro unidirectional-delay?                 uint32
+          |  +--ro unidirectional-min-delay?             uint32
+          |  +--ro unidirectional-max-delay?             uint32
+          |  +--ro unidirectional-delay-variation?       uint32
+          |  +--ro unidirectional-packet-loss?           decimal64
+          |  +--ro unidirectional-residual-bandwidth?    rt-types:bandwidth-ieee-float32
+          |  +--ro unidirectional-available-bandwidth?   rt-types:bandwidth-ieee-float32
+          |  +--ro unidirectional-utilized-bandwidth?    rt-types:bandwidth-ieee-float32
+          +--ro threshold-accelerated-advertisement
+             +--ro unidirectional-delay?                 uint32
+             +--ro unidirectional-min-delay?             uint32
+             +--ro unidirectional-max-delay?             uint32
+             +--ro unidirectional-delay-variation?       uint32
+             +--ro unidirectional-packet-loss?           decimal64
+             +--ro unidirectional-residual-bandwidth?    rt-types:bandwidth-ieee-float32
+             +--ro unidirectional-available-bandwidth?   rt-types:bandwidth-ieee-float32
+             +--ro unidirectional-utilized-bandwidth?    rt-types:bandwidth-ieee-float32
+
+  rpcs:
+    +---x check-available-resource
+       +---w input
+       |  +---w check-available-resource
+       |     +---w resource-request* [role-name]
+       |        +---w role-name             string
+       |        +---w direction?            enumeration
+       |        +---w (check-object)?
+       |        |  +--:(nes)
+       |        |  |  +---w nes
+       |        |  |     +---w ne*   string
+       |        |  +--:(ltps)
+       |        |     +---w ltps
+       |        |        +---w ltp* [id]
+       |        |           +---w id       string
+       |        |           +---w ne-id?   string
+       |        +---w pre-assigned-value?   string
+       |        +---w resource-range?       string
+       +--ro output
+          +--ro resource-request-results
+             +--ro resource-request-result* [role-name]
+                +--ro role-name                   string
+                +--ro pre-assigned-value?         string
+                +--ro assigned-status?            enumeration
+                +--ro available-resource-range?   string

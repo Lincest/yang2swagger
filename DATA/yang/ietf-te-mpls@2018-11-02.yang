@@ -1,0 +1,760 @@
+module ietf-te-mpls {
+  yang-version 1.1;
+  namespace "urn:ietf:params:xml:ns:yang:ietf-te-mpls";
+
+  /* Replace with IANA when assigned */
+  prefix "te-mpls";
+
+  /* Import TE base model */
+  import ietf-te {
+    prefix te;
+    reference "draft-ietf-teas-yang-te: A YANG Data Model for Traffic
+               Engineering Tunnels and Interfaces";
+  }
+
+  /* Import TE MPLS types */
+  import ietf-te-mpls-types {
+    prefix "te-mpls-types";
+    reference "draft-ietf-teas-yang-te-types: A YANG Data Model for
+               Common Traffic Engineering Types";
+  }
+
+  /* Import TE generic types */
+  import ietf-te-types {
+    prefix te-types;
+    reference "draft-ietf-teas-yang-te-types: A YANG Data Model for
+               Common Traffic Engineering Types";
+  }
+
+  /* Import routing types */
+    import ietf-routing-types {
+        prefix "rt-types";
+        reference "RFC6991: Common YANG Data Types";
+    }
+
+    import ietf-mpls-static {
+        prefix mpls-static;
+        reference "draft-ietf-mpls-static-yang: A YANG Data Model for MPLS Static LSPs";
+    }
+
+  import ietf-inet-types {
+    prefix inet;
+    reference "RFC6991: Common YANG Data Types";
+  }
+
+  /**
+  * create import. created by xwu.
+  */
+    import ietf-bfd-types {
+        prefix "bfd-types";
+        reference "RFC XXXX: YANG Data Model for BFD";
+    }
+
+
+
+  organization
+    "IETF Traffic Engineering Architecture and Signaling (TEAS)
+     Working Group";
+
+  contact
+    "WG Web:   <http://tools.ietf.org/wg/teas/>
+     WG List:  <mailto:teas@ietf.org>
+
+     WG Chair: Lou Berger
+               <mailto:lberger@labn.net>
+
+     WG Chair: Vishnu Pavan Beeram
+               <mailto:vbeeram@juniper.net>
+
+     Editor:   Tarek Saad
+               <mailto:tsaad@cisco.com>
+
+     Editor:   Rakesh Gandhi
+               <mailto:rgandhi@cisco.com>
+
+     Editor:   Vishnu Pavan Beeram
+               <mailto:vbeeram@juniper.net>
+
+     Editor:   Xufeng Liu
+               <mailto: xufeng.liu.ietf@gmail.com>
+
+     Editor:   Igor Bryskin
+               <mailto:Igor.Bryskin@huawei.com>";
+
+  description
+    "YANG data module for MPLS TE configurations,
+    state, RPC and notifications.";
+
+  revision "2018-11-02" {
+    description "Latest update to MPLS TE YANG module.";
+    reference "RFC3209";
+  }
+
+  /* MPLS TE tunnel properties*/
+
+  grouping tunnel-igp-shortcut_config {
+    description "TE tunnel IGP shortcut configs";
+    leaf shortcut-eligible {
+      type boolean;
+      default "true";
+      description
+        "Whether this LSP is considered to be eligible for us as a
+        shortcut in the IGP. In the case that this leaf is set to
+        true, the IGP SPF calculation uses the metric specified to
+        determine whether traffic should be carried over this LSP";
+    }
+    leaf metric-type {
+      type identityref {
+        base te-types:LSP_METRIC_TYPE;
+      }
+      default te-types:LSP_METRIC_INHERITED;
+      description
+        "The type of metric specification that should be used to set
+        the LSP(s) metric";
+    }
+    leaf metric {
+      type int32;
+      description
+        "The value of the metric that should be specified. The value
+        supplied in this leaf is used in conjunction with the metric
+        type to determine the value of the metric used by the system.
+        Where the metric-type is set to LSP_METRIC_ABSOLUTE - the
+        value of this leaf is used directly; where it is set to
+        LSP_METRIC_RELATIVE, the relevant (positive or negative)
+        offset is used to formulate the metric; where metric-type
+        is LSP_METRIC_INHERITED, the value of this leaf is not
+        utilized";
+    }
+    leaf-list routing-afs {
+      type inet:ip-version;
+      description
+        "Address families";
+    }
+  }
+
+  grouping tunnel-igp-shortcuts {
+    description
+      "TE tunnel IGP shortcut grouping";
+    container tunnel-igp-shortcut {
+      description
+        "Tunnel IGP shortcut properties";
+      uses tunnel-igp-shortcut_config;
+    }
+  }
+
+  grouping tunnel-forwarding-adjacency_configs {
+    description "Tunnel forwarding adjacency grouping";
+    leaf binding-label {
+      type rt-types:mpls-label;
+      description "MPLS tunnel binding label";
+    }
+    leaf load-share {
+      type uint32 {
+        range "1..4294967295";
+      }
+      description "ECMP tunnel forwarding
+        load-share factor.";
+    }
+    leaf policy-class {
+      type uint8 {
+        range "1..7";
+      }
+      description
+        "The class associated with this tunnel";
+    }
+  }
+
+  grouping tunnel-forwarding-adjacency {
+    description "Properties for using tunnel in forwarding.";
+    container forwarding {
+      description
+        "Tunnel forwarding properties container";
+      uses tunnel-forwarding-adjacency_configs;
+    }
+  }
+
+  /*** End of MPLS TE tunnel configuration/state */
+  grouping te-lsp-auto-bandwidth_config {
+    description
+      "Configuration parameters related to autobandwidth";
+
+    leaf enabled {
+      type boolean;
+      default false;
+      description
+        "Enables MPLS auto-bandwidth on the
+         LSP";
+    }
+
+    leaf min-bw {
+      type te-mpls-types:bandwidth-kbps;
+      description
+        "set the minimum bandwidth in Kbps for an
+         auto-bandwidth LSP";
+    }
+
+    leaf max-bw {
+      type te-mpls-types:bandwidth-kbps;
+      description
+        "set the maximum bandwidth in Kbps for an
+         auto-bandwidth LSP";
+    }
+
+    leaf adjust-interval {
+      type uint32;
+      description
+        "time in seconds between adjustments to
+         LSP bandwidth";
+    }
+
+    leaf adjust-threshold {
+      type rt-types:percentage;
+      description
+        "percentage difference between the LSP's
+         specified bandwidth and its current bandwidth
+         allocation -- if the difference is greater than the
+         specified percentage, auto-bandwidth adjustment is
+         triggered";
+    }
+  }
+
+  grouping te-lsp-overflow_config {
+    description
+     "configuration for MPLS LSP bandwidth
+      overflow adjustment";
+
+    leaf enabled {
+      type boolean;
+      default false;
+      description
+       "Enables MPLS LSP bandwidth overflow
+        adjustment on the LSP";
+    }
+
+    leaf overflow-threshold {
+      type rt-types:percentage;
+      description
+       "bandwidth percentage change to trigger
+        an overflow event";
+
+    }
+
+    leaf trigger-event-count {
+      type uint16;
+      description
+       "number of consecutive overflow sample
+        events needed to trigger an overflow adjustment";
+    }
+  }
+
+  grouping te-lsp-underflow_config {
+    description
+      "configuration for MPLS LSP bandwidth
+      underflow adjustment";
+
+    leaf enabled {
+      type boolean;
+      default false;
+      description
+       "enables bandwidth underflow
+        adjustment on the LSP";
+    }
+
+    leaf underflow-threshold {
+      type rt-types:percentage;
+      description
+       "bandwidth percentage change to trigger
+        and underflow event";
+    }
+
+    leaf trigger-event-count {
+      type uint16;
+      description
+       "number of consecutive underflow sample
+        events needed to trigger an underflow adjustment";
+    }
+  }
+  grouping te-tunnel-bandwidth_config {
+    description
+      "Configuration parameters related to bandwidth for a tunnel";
+
+    leaf specification-type {
+      type te-mpls-types:te-bandwidth-type;
+      
+      default SPECIFIED;
+      description
+        "The method used for setting the bandwidth, either explicitly
+        specified or configured";
+    }
+
+    leaf set-bandwidth {
+      when "../specification-type = 'SPECIFIED'" {
+       description
+         "The bandwidth value when bandwidth is explicitly
+          specified";
+      }
+      type te-mpls-types:bandwidth-kbps;
+      description
+       "set bandwidth explicitly, e.g., using
+        offline calculation";
+    }
+    leaf class-type {
+      type te-types:te-ds-class;
+      description
+        "The Class-Type of traffic transported by the LSP.";
+      reference "RFC4124: section-4.3.1";
+    }
+    
+    
+  /**
+   * container: qos for interface car , create by xwu
+   */
+     container qos-if-cars {         
+        list qos-if-car {
+           key "direction";
+           uses qos-if-car;
+        }
+    }
+    
+    
+    
+    
+    
+  }// end of te-tunnel-bandwidth_config
+
+
+
+  /**
+   * grouping: qos for interface car ,create by xwu
+   */
+
+  grouping qos-if-car {
+        description "qos parameter." ;
+        leaf direction {
+            description "qos for interface car" ;
+            type enumeration {
+                enum in{
+                    value 0 ;
+                    description "in direction." ;
+                }
+                enum out {
+                    value 1 ;
+                    description "out direction." ;
+                }
+            }
+        } 
+      
+        leaf CIR {
+            description "forward CIR. unit:Kbps" ;
+            type int32;
+        }  
+        leaf PIR {
+            description "forward PIR. unit:Kbps" ;
+            type int32;
+        }  
+        leaf CBS {
+            description "forward CBS. unit:byte" ;
+            type int32;
+        }   
+        leaf PBS {
+            description "forward PBS. unit:byte" ;
+            type int32;
+        }     
+  }//end of grouping
+
+
+  grouping te-tunnel-bandwidth_state {
+    description
+      "Operational state parameters relating to bandwidth for a tunnel";
+
+    leaf signaled-bandwidth {
+      type te-mpls-types:bandwidth-kbps;
+      description
+        "The currently signaled bandwidth of the LSP. In the case where
+        the bandwidth is specified explicitly, then this will match the
+        value of the set-bandwidth leaf; in cases where the bandwidth is
+        dynamically computed by the system, the current value of the
+        bandwidth should be reflected.";
+    }
+  }
+
+  grouping tunnel-bandwidth_top {
+    description
+      "Top level grouping for specifying bandwidth for a tunnel";
+
+    container bandwidth-mpls {
+      description
+        "Bandwidth configuration for TE LSPs";
+      uses te-tunnel-bandwidth_config;
+
+      container state {
+        config false;
+        description
+          "State parameters related to bandwidth
+          configuration of TE tunnels";
+        uses te-tunnel-bandwidth_state;
+      }
+
+      container auto-bandwidth {
+        when "../specification-type = 'AUTO'" {
+          description
+            "Include this container for auto bandwidth
+            specific configuration";
+        }
+        description
+          "Parameters related to auto-bandwidth";
+
+        uses te-lsp-auto-bandwidth_config;
+
+        container overflow {
+          description
+            "configuration of MPLS overflow bandwidth
+            adjustment for the LSP";
+
+          uses te-lsp-overflow_config;
+        }
+
+        container underflow {
+          description
+            "configuration of MPLS underflow bandwidth
+            adjustment for the LSP";
+
+          uses te-lsp-underflow_config;
+        }
+      }
+    }
+  }
+
+  grouping te-path-bandwidth_top {
+    description
+      "Top level grouping for specifying bandwidth for a TE path";
+
+    container bandwidth {
+      description
+        "Bandwidth configuration for TE LSPs";
+      uses te-tunnel-bandwidth_config;
+      container state {
+        config false;
+        description
+          "State parameters related to bandwidth
+          configuration of TE tunnels";
+        uses te-tunnel-bandwidth_state;
+      }
+    }
+  }
+
+
+
+
+  /**
+   * grouping: bfd-policy ,create by xwu
+   */
+   
+   
+	grouping  bfd-policy {
+     description  "bfd-policy.";
+
+    leaf bfd-profile-ID {
+    description "BFD prodile id." ;
+     type string;
+		        }    
+		  
+     leaf bfd-detect-type {
+      type enumeration {
+        enum undetect {
+        	value 0;
+          description  "undetect";
+        }
+        enum dynamic-BFD {
+          value 1;
+          description   "dynamic-BFD";
+        }
+        enum static-BFD {
+          value 2;
+          description   "static-BFD";
+        }
+      } 
+		}
+		
+		uses bfd-types:all-session;
+	  uses bfd-types:base-cfg-parms;
+  
+  
+  } // end of grouping
+
+
+
+
+  /**
+   * grouping: oam-config ,create by xwu
+   */
+
+  grouping oam-config {
+      description "oam-config." ;
+  
+		 leaf meg-id {
+		            description "meg-id" ;
+		            type string;
+		        }   
+  
+  	leaf meg-level{
+    	type uint32 {
+          range 0..7;
+        }
+    	description "meg-level";
+    }
+  
+    leaf mep-id {
+    	type uint32;
+    	description "mep-id ";
+    }
+  
+    leaf remote-mep-id  { 
+    	type uint32;
+    	description "remote-mep-id  ";
+    }
+    
+    leaf cc-interval {
+      type identityref {
+        base te-types:time-interval;
+      }
+      description "cc-interval.";
+    }
+    
+    leaf lm-interval {
+      type identityref {
+        base te-types:time-interval;
+      }
+      description "lm-interval.";
+    }
+  
+    leaf dm-interval {
+      type identityref {
+        base te-types:time-interval;
+      }
+      description "dm-interval.";
+    }  
+    
+  
+  }//end of grouping
+
+
+
+
+
+
+
+
+
+  /**
+   * MPLS TE augmentations
+   */
+
+  /* MPLS TE tunnel augmentations */
+  augment "/te:te/te:tunnels/te:tunnel" {
+    description "MPLS TE tunnel config augmentations";
+    uses tunnel-igp-shortcuts;
+    uses tunnel-forwarding-adjacency;
+    uses tunnel-bandwidth_top;
+    
+    
+  /**
+   * create by xwu
+   */
+   leaf path-setup-protocol {
+      type identityref {
+        base te-types:path-signaling-type;
+      }
+      description
+        "Signaling protocol used to set up this tunnel";
+    }
+    
+    
+   /**
+   * BFD policy , create by xwu
+   */
+    uses bfd-policy;
+    
+   /**
+   * oam-config, create by xwu
+   */
+   uses oam-config;
+   
+    
+  }//end of augment
+
+  /* MPLS TE LSPs augmentations */
+  augment "/te:te/te:tunnels/te:tunnel/" +
+          "te:p2p-primary-paths/te:p2p-primary-path" {
+    when "/te:te/te:tunnels/te:tunnel" +
+      "/te:p2p-primary-paths/te:p2p-primary-path" +
+      "/te:path-setup-protocol = 'te-types:path-setup-static'" {
+      description
+      "When the path is statically provisioned";
+    }
+    description "MPLS TE LSP augmentation";
+    leaf static-lsp-name {
+      type mpls-static:static-lsp-ref;
+      description "Static LSP name";
+    }
+  }
+
+  augment "/te:te/te:tunnels/te:tunnel/" +
+          "te:p2p-primary-paths/te:p2p-primary-path/" +
+          "te:state" {
+    description "MPLS TE LSP augmentation";
+    leaf static-lsp-name {
+      type mpls-static:static-lsp-ref;
+      description "Static LSP name";
+
+    }
+  }
+  augment "/te:te/te:tunnels/te:tunnel/" +
+          "te:p2p-secondary-paths/te:p2p-secondary-path" {
+    when "/te:te/te:tunnels/te:tunnel" +
+      "/te:p2p-secondary-paths/te:p2p-secondary-path/" +
+      "te:path-setup-protocol = 'te-types:path-setup-static'" {
+      description
+      "When the path is statically provisioned";
+    }
+    description "MPLS TE LSP augmentation";
+    leaf static-lsp-name {
+      type mpls-static:static-lsp-ref;
+      description "Static LSP name";
+    }
+  }
+  augment "/te:te/te:tunnels/te:tunnel/" +
+          "te:p2p-secondary-paths/te:p2p-secondary-path/" +
+          "te:state" {
+    description "MPLS TE LSP augmentation";
+    leaf static-lsp-name {
+      type mpls-static:static-lsp-ref;
+      description "Static LSP name";
+    }
+  }
+
+  augment "/te:te/te:globals/te:named-path-constraints/" +
+          "te:named-path-constraint" {
+    description "foo";
+    uses te-path-bandwidth_top;
+  }
+
+  augment "/te:te/te:tunnels/te:tunnel/te:p2p-primary-paths" +
+          "/te:p2p-primary-path/te:state/te:lsps/te:lsp" {
+    description
+      "MPLS TE generic data augmentation pertaining to specific TE
+       LSP";
+    uses te-types:performance-metric-container;
+  }
+  
+  
+  
+  
+  /**
+  * create grouping. created by xwu.
+  */
+     grouping available-resource {
+        leaf role-name {
+            description "such as masterVCID, slaveVCID ...";
+            type string;
+        }
+        
+        leaf direction {
+            type enumeration {
+                enum NOT-APPLICATION {
+                    value 0;
+                    description "";
+                }
+                enum BI-DIRECTION {
+                    value 1;
+                    description "";
+                }
+            }
+        }
+        
+   choice check-object{
+			case nes {
+				container nes {
+					leaf-list ne {
+						type string;
+					}
+				}
+			}
+			case ltps {
+				container ltps {
+					list ltp {
+						key "id";
+						leaf id {
+							type string;
+						}
+						
+						leaf ne-id {
+							type string;
+						}
+					}
+				}
+			}
+		}
+        
+        leaf pre-assigned-value {
+            description "";
+            type string;
+        }
+        
+        leaf resource-range {
+            description "resource range,format 1000-2000";
+            type string;
+        }
+	    }//end grouping
+    
+
+
+  
+  /**
+  * create rpc interface. created by xwu.
+  */
+ rpc check-available-resource {
+        input {
+            container check-available-resource {
+			    list resource-request{
+				     key "role-name";
+					 uses available-resource;
+            }
+        }
+        }//end of input
+        
+        output {
+            container resource-request-results {
+                list resource-request-result {
+                    key "role-name";
+                    leaf role-name {
+                        description "such as masterVCID, slaveVCID , lsp-out-label,lsp-in-label,pw-out-label,pw-in-label,vlan;...";
+                        type string;
+                    }
+
+                    leaf pre-assigned-value {
+                        description "";
+                        type string;
+                    }
+                    
+                    leaf assigned-status {
+                        type enumeration {
+                            enum NO-ASSIGNED {
+                                value 0;
+                            }
+                            enum IS-ASSIGNED {
+                                value 1;
+                            }
+                        }
+                    }
+                    
+                    leaf available-resource-range {
+                        description "resource range,format 1000-1000,1200-2000,2100-3000...";
+                        type string;
+                    }
+                }
+            } 
+        }	
+		}
+  
+}// end of module
